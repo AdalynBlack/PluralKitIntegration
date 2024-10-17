@@ -37,26 +37,25 @@ import { Message } from "discord-types/general";
 import { PKAPI } from "./api";
 import pluralKit from "./index";
 import {
-    Author,
-    authors,
     deleteMessage,
-    generateAuthorData,
-    getAuthorOfMessage,
     isOwnPkMessage,
     isPk,
-    loadAuthors, loadData,
-    localSystem,
+    loadData,
     replaceTags,
-    getUserSystem,
 } from "./utils";
+import {
+    Author,
+    State,
+} from "./author";
 
 function GetAuthorMenuItem(author: Author, message: Message) {
-    if (!author.member) return null;
+    if (typeof(author.member) == "number") return null;
+    if (typeof(author.system) == "number") return null;
     return (
         <Menu.MenuItem
             id={"pk_menu_item_" + author.member.uuid}
             iconLeft={() =>
-                (<Avatar className="pk-menu-icon" src={author.member?.avatar_url ?? author.system.avatar_url ?? "https://pluralkit.me/favicon.png"} size="SIZE_20"/>)
+                (<Avatar className="pk-menu-icon" src={author.member.avatar_url ?? author.system.avatar_url ?? "https://pluralkit.me/favicon.png"} size="SIZE_20"/>)
             }
             label={
                 <div className="pk-menu-item">
@@ -66,7 +65,7 @@ function GetAuthorMenuItem(author: Author, message: Message) {
             action={() => {
                 const { guild_id } = ChannelStore.getChannel(message.channel_id);
                 MessageActions.sendMessage(message.channel_id, // Replace with pluralkit's channel ID once reproxying works in DMs: 1276796961227276338
-                                           {content: "pk;reproxy https://discord.com/channels/" + guild_id + "/" + message.channel_id + "/" + message.id + " " + author.member?.name},
+                                           {content: "pk;reproxy https://discord.com/channels/" + guild_id + "/" + message.channel_id + "/" + message.id + " " + author.member.name},
                                            false);
                 }
             }
@@ -90,7 +89,7 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, {message}) => {
         />
     );
 
-    var proxyMenuItems = localSystem.map(author => GetAuthorMenuItem(author, message));
+    var proxyMenuItems = Author.localSystem.map(author => GetAuthorMenuItem(author, message));
 
     // Place right after the apps dropdown
     children[4]?.props.children.splice(4, 0,
@@ -186,7 +185,7 @@ export default definePlugin({
     description: "Pluralkit integration for Vencord",
     authors: [{
         name: "Scyye",
-        id: 553652308295155723n
+        id: 553652308295155723
     }],
     startAt: StartAt.WebpackReady,
     settings,
@@ -264,12 +263,12 @@ export default definePlugin({
     ],
 
     getCurrentUser: (defaultUser) => {
-        if (!localSystem?.length) return defaultUser;
+        if (!Author.localSystem?.length) return defaultUser;
 
-        const fronters = getUserSystem(defaultUser.id, pluralKit.api)?.switch?.memebers?.[0];
+        const fronters = Author.getAuthorFromUser(defaultUser, pluralKit.api)?.switch?.memebers?.[0];
         if (!fronters) return defaultUser;
 
-        var filtered = localSystem.filter((author) => {return author.member?.id == fronters[0]});
+        var filtered = Author.localSystem.filter((author) => {return author.member?.id == fronters[0]});
         if (!filtered[0].member) return defaultUser;
         defaultUser.globalName = filtered[0].member?.display_name;
         return defaultUser;
@@ -277,16 +276,16 @@ export default definePlugin({
 
     getUserPopoutMessageSender: ({channelId, messageId, user}) => {
         if (user) {
-            const authorData = generateAuthorData(user);
+            const authorData = Author.generateAuthorData(user);
 
-            if (authors[authorData])
+            if (Author.authors[authorData])
                 return userPopoutMessageSender;
         }
 
         if (channelId && messageId) {
-            const author = getAuthorOfMessage(MessageStore.getMessage(channelId, messageId), pluralKit.api);
+            const author = Author.getAuthorOfMessage(MessageStore.getMessage(channelId, messageId), pluralKit.api);
 
-            if (author?.member)
+            if (!(typeof(author.member) == "number"))
                 return userPopoutMessageSender;
         }
 
@@ -308,7 +307,7 @@ export default definePlugin({
         if (!isPk(userPopoutMessage))
             return null;
 
-        const pkAuthor = getAuthorOfMessage(userPopoutMessage, pluralKit.api);
+        const pkAuthor = Author.getAuthorOfMessage(userPopoutMessage, pluralKit.api);
 
         if (pkAuthor?.member === undefined)
             return null;
@@ -320,7 +319,7 @@ export default definePlugin({
         if (!isPk(userPopoutMessage))
             return "";
 
-        const pkAuthor = getAuthorOfMessage(userPopoutMessage, pluralKit.api);
+        const pkAuthor = Author.getAuthorOfMessage(userPopoutMessage, pluralKit.api);
 
         if (pkAuthor?.member === undefined)
             return "";
@@ -332,7 +331,7 @@ export default definePlugin({
         if (!user)
             return nick;
 
-        const pkAuthor = getUserSystem(user.id, pluralKit.api);
+        const pkAuthor = Author.getAuthorFromUser(user, pluralKit.api);
 
         if (!pkAuthor)
             return nick;
@@ -340,7 +339,7 @@ export default definePlugin({
         if (!pkAuthor.switches)
             return nick;
 
-        const [messageSwitch] = pkAuthor.switches?.values();
+        const [messageSwitch] = pkAuthor.switches?.values?.() ?? [];
         const member = messageSwitch?.members ? messageSwitch.members.values().toArray()[0] ?? pkAuthor.member : undefined;
 
         if (!member)
@@ -358,7 +357,7 @@ export default definePlugin({
         try {
             const discordUsername = author.nick ?? message.author.globalName ?? message.author.username;
 
-            const userSystem = getUserSystem(message.author.id, pluralKit.api)
+            const userSystem = Author.getAuthorFromUser(message.author, pluralKit.api)
             if (!isPk(message) && !userSystem)
                 return <>{prefix}{discordUsername}</>;
 
@@ -374,20 +373,20 @@ export default definePlugin({
             if (!settings.store.colorNames)
                 return <>{prefix}{username}</>;
 
-            const pkAuthor = userSystem ?? getAuthorOfMessage(message, pluralKit.api);
+            const pkAuthor = userSystem ?? Author.getAuthorOfMessage(message, pluralKit.api);
 
             // A PK message without an author. It's likely still loading
             if (!pkAuthor)
                 return <span style={{color: '#555555'}}>{prefix}{username}</span>;
 
-            if (pkAuthor.switches) {
-                const [messageSwitch] = pkAuthor.switches?.values()?.filter((switchObj) => {return message.timestamp >= switchObj.timestamp});
+            if (pkAuthor.switches?.values) {
+                const [messageSwitch] = pkAuthor.switches.values().filter((switchObj) => {return message.timestamp >= switchObj.timestamp});
 
                 pkAuthor.member = messageSwitch?.members ? messageSwitch.members.values().toArray()[0] ?? pkAuthor.member : undefined;
             }
 
             // A PK message that contains an author but no member, meaning the member was likely deleted
-            if (!pkAuthor.member) {
+            if (!pkAuthor.member?.id) {
                 // If this is a user system, don't apply the red coloration
                 let style = !userSystem ? {color: '#9A2D22'} : undefined;
                 return <span style={style}>{prefix}{username}</span>;
@@ -404,12 +403,12 @@ export default definePlugin({
 
             const messageGuildID = ChannelStore.getChannel(message.channel)?.guild_id;
             if (isMe && messageGuildID && !userSystem) {
-                author.member.getGuildSettings(messageGuildID).then(guildSettings => {
-                    author.guildSettings.set(messageGuildID, guildSettings);
+                author.member?.getGuildSettings(messageGuildID).then(guildSettings => {
+                    author.guildSettings?.set?.(messageGuildID, guildSettings);
                 });
 
-                author.system.getGuildSettings(messageGuildID).then(systemSettings => {
-                    author.systemSettings.set(messageGuildID, systemSettings);
+                author.system?.getGuildSettings(messageGuildID).then(systemSettings => {
+                    author.systemSettings?.set?.(messageGuildID, systemSettings);
                 });
             }
 
@@ -436,7 +435,7 @@ export default definePlugin({
     async start() {
         await loadData();
         if (settings.store.data === "{}") {
-            await loadAuthors();
+            await Author.loadAuthors();
         }
 
         addDecoration("pk-proxied", props => {

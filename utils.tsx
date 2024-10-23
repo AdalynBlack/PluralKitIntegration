@@ -6,7 +6,7 @@
 
 import { DataStore } from "@api/index";
 import { insertTextIntoChatInputBox } from "@utils/discord";
-import { findByCode } from "@webpack";
+import { findByCodeLazy } from "@webpack";
 import { ChannelStore, FluxDispatcher, UserStore } from "@webpack/common";
 import { Message } from "discord-types/general";
 
@@ -119,9 +119,8 @@ export function replyToMessage(msg: Message, mention: boolean, hideMention: bool
     }
 }
 
+const addReaction = findByCodeLazy(".userHasReactedWithEmoji");
 export function deleteMessage(msg: Message) {
-    const addReaction = findByCode(".userHasReactedWithEmoji");
-
     addReaction(msg.channel_id, msg.id, { name: "❌" });
 }
 

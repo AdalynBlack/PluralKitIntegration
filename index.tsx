@@ -113,7 +113,7 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, {message}) => {
     let deleteMenuSection = children.find(child => child.props?.children?.find(child => child?.props?.id == "delete"));
 
     // Override the regular delete button if it's not present
-    if (!deleteMenuSection)
+    if (deleteMenuSection)
         return;
 
     deleteMenuSection.props.children.push(

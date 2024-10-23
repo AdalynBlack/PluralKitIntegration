@@ -122,8 +122,8 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, {message}) => {
             icon={DeleteIcon}
             color="danger"
             label={
-                <div className="delete">
-                    <div className="delete">Delete Message</div>
+                <div className="pk-delete">
+                    <div className="pk-delete">Delete Message</div>
                 </div>
             }
             action={() => deleteMessage(message)}

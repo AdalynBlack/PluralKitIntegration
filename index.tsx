@@ -76,8 +76,10 @@ function GetAuthorMenuItem(author: Author, message: Message) {
 const ctxMenuPatch: NavContextMenuPatchCallback = (children, {message}) => {
     if (!isOwnPkMessage(message, pluralKit.api)) return;
 
+    let editMenuSection = children.find(child => child.props?.children?.find(child => child?.props?.id == "reply"));
+
     // Place at the beginning of the second menu section
-    children[3]?.props.children.splice(0, 0,
+    editMenuSection?.props?.children?.splice?.(0, 0,
         <Menu.MenuItem
             id="pk-edit"
             icon={PencilIcon}
@@ -90,10 +92,12 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, {message}) => {
         />
     );
 
-    var proxyMenuItems = localSystem.map(author => GetAuthorMenuItem(author, message));
+    let proxyMenuItems = localSystem.map(author => GetAuthorMenuItem(author, message));
+
+    let reproxyMenuSection = children.find(child => child.props?.children?.find(child => child?.props?.id == "copy-link"));
 
     // Place right after the apps dropdown
-    children[4]?.props.children.splice(4, 0,
+    reproxyMenuSection.props.children.push(
         <Menu.MenuItem
             id="pk-reproxy"
             label={
@@ -106,13 +110,13 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, {message}) => {
         />
     );
 
+    let deleteMenuSection = children.find(child => child.props?.children?.find(child => child?.props?.id == "delete"));
+
     // Override the regular delete button if it's not present
-    if (children[5] == null)
-        return;
-    if (children[5].props.children[2] != null)
+    if (!deleteMenuSection)
         return;
 
-    children[5].props.children[2] =
+    deleteMenuSection.props.children.push(
         <Menu.MenuItem
             id="pk-delete"
             icon={DeleteIcon}
@@ -123,7 +127,8 @@ const ctxMenuPatch: NavContextMenuPatchCallback = (children, {message}) => {
                 </div>
             }
             action={() => deleteMessage(message)}
-        />;
+        />
+    );
 };
 
 export const settings = definePluginSettings({

@@ -383,7 +383,7 @@ export default definePlugin({
 
             // A PK message without an author. It's likely still loading
             if (!pkAuthor)
-                return <span style={{color: '#555555'}}>{prefix}{username}</span>;
+                return <span style={{color: "var(--text-muted)"}}>{prefix}{username}</span>;
 
             if (pkAuthor.switches) {
                 const [messageSwitch] = pkAuthor.switches?.values()?.filter((switchObj) => {return message.timestamp >= switchObj.timestamp});
@@ -394,16 +394,15 @@ export default definePlugin({
             // A PK message that contains an author but no member, meaning the member was likely deleted
             if (!pkAuthor.member) {
                 // If this is a user system, don't apply the red coloration
-                let style = !userSystem ? {color: '#9A2D22'} : undefined;
+                let style = !userSystem ? {color: "var(--text-danger)"} : undefined;
                 return <span style={style}>{prefix}{username}</span>;
             }
 
             // A valid member exists, set the author to not be a bot so we can link back to the sender
             message.author.bot = false;
 
-            let color: string = "888888";
-
-            color = pkAuthor.member?.color ?? pkAuthor.system?.color ?? color;
+            let color = pkAuthor.member?.color ?? pkAuthor.system?.color;
+            color = color ? `#${color}` : "var(--text-normal)"
 
             const isMe = isOwnPkMessage(message, pluralKit.api);
 
@@ -429,7 +428,7 @@ export default definePlugin({
 
             const resultText = replaceTags(display, message, discordUsername, pkAuthor);
 
-            return <span style={{color: `#${color}`}}>{resultText}</span>;
+            return <span style={{color: color}}>{resultText}</span>;
         } catch (e) {
             console.error(e);
             return <>{prefix}{author?.nick}</>;

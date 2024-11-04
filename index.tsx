@@ -209,7 +209,7 @@ export default definePlugin({
         {
             find: "getCurrentUser(){",
             replacement: {
-                match: / I\[d\.default\.getId\(\)\]/,
+                match: / I\[\i\.default\.getId\(\)\]/,
                 replace: " $self.getCurrentUser($&)"
             }
         },
@@ -231,21 +231,21 @@ export default definePlugin({
             find: "type:\"USER_PROFILE_MODAL_OPEN\"",
             replacement: {
                 match: /let{userId:/,
-                replace: "e.userId=$self.getUserPopoutMessageSender(e)?.id ?? e.userId;$&"
+                replace: "arguments[0].userId=$self.getUserPopoutMessageSender(arguments[0])?.id ?? arguments[0].userId;$&"
             }
         },
         {
             find: "getRelationshipType(t.id):",
             replacement: {
-                match: /user:t/,
-                replace: "t=$self.getUserPopoutMessageSender(e) ?? e.user"
+                match: /let{user:\i/,
+                replace: "arguments[0].user=$self.getUserPopoutMessageSender(arguments[0]) ?? arguments[0].user;$&"
             }
         },
         {
             find: "renderUserGuildPopout: channel should never be null",
             replacement: {
                 match: /if/,
-                replace: "$self.renderUserGuildPopout(t);$&"
+                replace: "$self.renderUserGuildPopout(arguments[1]);$&"
             }
         },
         {

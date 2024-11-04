@@ -371,7 +371,7 @@ export default definePlugin({
             if (decorations)
                 decorations[0] = null;
 
-            let username = userSystem ? discordUsername : message.author.username ?? author.nick ?? message.author.globalName;
+            let username = isPk(message) ? message.author.username ?? author.nick ?? message.author.globalName : discordUsername;
 
             // U-FE0F is the Emoji variant selector. This converts pictographics to emoticons
             username = username.replace(/\p{Emoji}/ug, "$&\uFE0F");
@@ -426,7 +426,7 @@ export default definePlugin({
             else
                 display = settings.store.displayOther;
 
-            const resultText = replaceTags(display, message, discordUsername, pkAuthor);
+            const resultText = replaceTags(display, message, username, pkAuthor);
 
             return <span style={{color: color}}>{resultText}</span>;
         } catch (e) {

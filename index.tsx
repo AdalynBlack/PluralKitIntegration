@@ -191,7 +191,7 @@ export default definePlugin({
     description: "Pluralkit integration for Vencord",
     authors: [{
         name: "Scyye",
-        id: 553652308295155723n
+        id: 553652308295155723
     }],
     startAt: StartAt.WebpackReady,
     settings,

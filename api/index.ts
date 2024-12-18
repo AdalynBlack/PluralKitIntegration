@@ -36,7 +36,7 @@ import axios, { AxiosInstance } from "axios";
 
 import ROUTES from "./routes";
 import APIError from "./structures/apiError";
-import rateLimit from "./pk-axios-limiter";
+import rateLimit from "./rate-limiter";
 import Group, { IGroup } from "./structures/group";
 import Member, { IMember } from "./structures/member";
 import MemberGuildSettings, { IMemberGuildSettings } from "./structures/memberGuildSettings";

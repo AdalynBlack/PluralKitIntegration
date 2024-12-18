@@ -200,6 +200,20 @@ export default definePlugin({
     },
     patches: [
         {
+            find: '"Message Username"',
+            replacement: {
+                match: /(?<=\){)let{[^;]*message:[^;]*,repliedMessage:/,
+                replace: "$self.saveTimestamp(arguments[0]);$&"
+            }
+        },
+        {
+            find: ")?\"gif\":\"jpg\";",
+            replacement: {
+                match: /(?<=\){)let \i,{endpoint:.*=.;/,
+                replace: "if($self.fronterPfp(arguments[0].id))return $self.fronterPfp(arguments[0].id);$&"
+            }
+        },
+        {
             find: "let{colorRoleId:",
             replacement: {
                 match: /let{colorRoleId:/,
@@ -209,7 +223,7 @@ export default definePlugin({
         {
             find: "getCurrentUser(){",
             replacement: {
-                match: / I\[\i\.default\.getId\(\)\]/,
+                match: /(?<=return )\i\[[^\.]*.default.getId\(\)\]/,
                 replace: " $self.getCurrentUser($&)"
             }
         },
@@ -268,13 +282,29 @@ export default definePlugin({
         },
     ],
 
+    saveTimestamp: ({message}) => {
+        if(message?.timestamp)
+            savedTimestamp = new Date(message.timestamp);
+    },
+
+    fronterPfp: (userId) => {
+        const pkAuthor = getUserSystem(userId, pluralKit.api);
+        const messageIter = pkAuthor?.switches?.values();
+        const messageSwitch = messageIter?.filter((switchObj) => {return savedTimestamp >= switchObj?.timestamp})?.next?.();
+        const member = messageSwitch?.value?.members?.values?.()?.next?.();
+        const url = member?.value?.avatar_url;
+        return url;
+    },
+
     getCurrentUser: (defaultUser) => {
         if (!localSystem?.length) return defaultUser;
 
-        const fronters = getUserSystem(defaultUser.id, pluralKit.api)?.switch?.memebers?.[0];
-        if (!fronters) return defaultUser;
+        const userSystem = getUserSystem(defaultUser.id, pluralKit.api);
+        const firstSwitch = userSystem?.switches?.values?.()?.next?.();
+        const currentFront = firstSwitch?.value;
+        if (!currentFront) return defaultUser;
 
-        var filtered = localSystem.filter((author) => {return author.member?.id == fronters[0]});
+        var filtered = localSystem.filter((author) => {return author.member?.id == currentFront?.members?.values?.()?.next?.()?.value?.id});
         if (!filtered[0].member) return defaultUser;
         defaultUser.globalName = filtered[0].member?.display_name;
         return defaultUser;
@@ -345,7 +375,7 @@ export default definePlugin({
         if (!pkAuthor.switches)
             return nick;
 
-        const [messageSwitch] = pkAuthor.switches?.values();
+        const messageSwitch = pkAuthor.switches?.[0]?.value;
         const member = messageSwitch?.members ? messageSwitch.members.values().toArray()[0] ?? pkAuthor.member : undefined;
 
         if (!member)
@@ -519,3 +549,4 @@ function onKey(e: KeyboardEvent) {
 
 var userPopoutMessage: Message | null = null;
 var userPopoutMessageSender: any = null;
+var savedTimestamp: any = new Date();

@@ -90,8 +90,6 @@ export async function loadData() {
 
     const localSystem: Author[] = [];
 
-    console.log(system);
-
     (system.members??(await system.getMembers())).forEach((member: Member) => {
         localSystem.push({
             member,

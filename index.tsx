@@ -203,7 +203,7 @@ export default definePlugin({
             find: "let{colorRoleId:",
             replacement: {
                 match: /let{colorRoleId:/,
-                replace: "e.nick=$self.modifyNick(e);$&"
+                replace: "arguments[0].nick=$self.modifyNick(arguments[0]);$&"
             }
         },
         {
@@ -223,8 +223,8 @@ export default definePlugin({
         {
             find: ".hasAvatarForGuild(null==",
             replacement: {
-                match: /return\(0/,
-                replace: "if(t){t.bio=$self.tryGetPkBio();}$&"
+                match: /let{user:/,
+                replace: "if(arguments[0].displayProfile){arguments[0].displayProfile.bio=$self.tryGetPkBio();}$&"
             }
         },
         {
@@ -235,7 +235,7 @@ export default definePlugin({
             }
         },
         {
-            find: "getRelationshipType(t.id):",
+            find: "PENDING_INCOMING&&(0,",
             replacement: {
                 match: /let{user:\i/,
                 replace: "arguments[0].user=$self.getUserPopoutMessageSender(arguments[0]) ?? arguments[0].user;$&"

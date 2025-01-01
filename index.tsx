@@ -431,7 +431,7 @@ export default definePlugin({
             // A valid member exists, set the author to not be a bot so we can link back to the sender
             message.author.bot = false;
 
-            let color = pkAuthor.member?.color ?? pkAuthor.system?.color;
+            let color = author.colorString ?? pkAuthor.member?.color ?? pkAuthor.system?.color;
             color = color ? `#${color}` : "var(--text-normal)"
 
             const isMe = isOwnPkMessage(message, pluralKit.api);

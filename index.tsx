@@ -414,7 +414,11 @@ export default definePlugin({
 
             // A PK message without an author. It's likely still loading
             if (!pkAuthor)
-                return <span style={{color: "var(--text-muted)"}}>{prefix}{username}</span>;
+                return <span style={{color: "var(--text-danger))"}}>{prefix}{username}</span>;
+
+            const guildID = ChannelStore.getChannel(message.channel_id)?.guild_id;
+            const guildMember = GuildMemberStore.getMember(guildID, pkAuthor.discordID);
+            const roleColor = guildMember?.colorString;
 
             if (pkAuthor.switches) {
                 const [messageSwitch] = pkAuthor.switches?.values()?.filter((switchObj) => {return message.timestamp >= switchObj.timestamp});
@@ -425,18 +429,17 @@ export default definePlugin({
             // A PK message that contains an author but no member, meaning the member was likely deleted
             if (!pkAuthor.member) {
                 // If this is a user system, don't apply the red coloration
-                let style = !userSystem ? {color: "var(--text-danger)"} : undefined;
+                let style = !userSystem ? {background: `linear-gradient(in oklab 60deg, ${roleColor} 40%, var(--text-danger) 80%)`} : undefined;
+                style.backgroundClip = "text";
+                style.color = "transparent";
+				style.webkitBackgroundClip = "text";
                 return <span style={style}>{prefix}{username}</span>;
             }
 
             // A valid member exists, set the author to not be a bot so we can link back to the sender
             message.author.bot = false;
 
-            const guildID = ChannelStore.getChannel(message.channel_id)?.guild_id;
-            const guildMember = GuildMemberStore.getMember(guildID, pkAuthor.discordID);
-            const roleColor = guildMember?.colorString.substring(1);
-
-            let color = roleColor ?? pkAuthor.member?.color ?? pkAuthor.system?.color;
+            let color = pkAuthor.member?.color ?? pkAuthor.system?.color;
             color = color ? `#${color}` : "var(--text-normal)"
 
             const isMe = isOwnPkMessage(message, pluralKit.api);
@@ -462,7 +465,8 @@ export default definePlugin({
 
             const resultText = replaceTags(display, message, username, pkAuthor);
 
-            return <span style={{color: color}}>{resultText}</span>;
+            //return <span style={{color: color}}>{resultText}</span>;
+			return <span style={{background: `linear-gradient(in oklab 60deg, ${roleColor} 40%, ${color} 80%`, webkitBackgroundClip: "text", backgroundClip: "text", color: "transparent"}}>{prefix}{username}</span>;
         } catch (e) {
             console.error(e);
             return <>{prefix}{author?.nick}</>;

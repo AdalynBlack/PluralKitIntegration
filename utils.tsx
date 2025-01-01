@@ -24,12 +24,13 @@ export let localSystem: Author[] = [];
 export const RELOAD_TIMEOUT = 60*1000;
 
 export interface Author {
+    discordID: string;
+    guildSettings?: Map<string, MemberGuildSettings>;
+    lastUpdated: number;
     member?: Member;
     system: System;
-    guildSettings?: Map<string, MemberGuildSettings>;
     systemSettings?: Map<string, SystemGuildSettings>;
     switches?: Map<Switch>;
-    lastUpdated: number;
 }
 
 export function isPk(msg: Message | null) {
@@ -139,6 +140,7 @@ export function getAuthorOfMessage(message: Message, pk: PKAPI) {
     pk.getMessage({ message: message.id }).then(msg => {
         if (!author)
             author = {system: msg.system as System, lastUpdated: Date.now()};
+        author.discordID = msg.sender
         author.member = msg.member as Member;
         author.system = msg.system as System;
         author.systemSettings = new Map();
@@ -168,8 +170,9 @@ export function getUserSystem(discAuthor: string, pk: PKAPI) {
         if (!author)
             author = {system: system, lastUpdated: Date.now()};
         else {
-            author.system = system
+            author.system = system;
         }
+        author.discordID = discAuthor;
 
         authors["@"+discAuthor] = author;
 

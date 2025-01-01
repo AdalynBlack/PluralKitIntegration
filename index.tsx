@@ -28,6 +28,7 @@ import {
     Avatar,
     Button,
     ChannelStore,
+    GuildMemberStore,
     Menu,
     MessageActions,
     MessageStore, UserStore
@@ -431,19 +432,22 @@ export default definePlugin({
             // A valid member exists, set the author to not be a bot so we can link back to the sender
             message.author.bot = false;
 
-            let color = author.colorString ?? pkAuthor.member?.color ?? pkAuthor.system?.color;
+            const guildID = ChannelStore.getChannel(message.channel_id)?.guild_id;
+            const guildMember = GuildMemberStore.getMember(guildID, pkAuthor.discordID);
+            const roleColor = guildMember?.colorString.substring(1);
+
+            let color = roleColor ?? pkAuthor.member?.color ?? pkAuthor.system?.color;
             color = color ? `#${color}` : "var(--text-normal)"
 
             const isMe = isOwnPkMessage(message, pluralKit.api);
 
-            const messageGuildID = ChannelStore.getChannel(message.channel)?.guild_id;
-            if (isMe && messageGuildID && !userSystem) {
-                author.member.getGuildSettings(messageGuildID).then(guildSettings => {
-                    author.guildSettings.set(messageGuildID, guildSettings);
+            if (isMe && guildID && !userSystem) {
+                pkAuthor.member.getGuildSettings(guildID).then(guildSettings => {
+                    pkAuthor.guildSettings.set(guildID, guildSettings);
                 });
 
-                author.system.getGuildSettings(messageGuildID).then(systemSettings => {
-                    author.systemSettings.set(messageGuildID, systemSettings);
+                pkAuthor.system.getGuildSettings(guildID).then(systemSettings => {
+                    pkAuthor.systemSettings.set(guildID, systemSettings);
                 });
             }
 

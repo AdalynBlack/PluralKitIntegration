@@ -305,8 +305,10 @@ export default definePlugin({
         const currentFront = firstSwitch?.value;
         if (!currentFront) return defaultUser;
 
-        var filtered = localSystem.filter((author) => {return author.member?.id == currentFront?.members?.values?.()?.next?.()?.value?.id});
-        if (!filtered[0].member) return defaultUser;
+        var filtered = localSystem.filter((author) => {return author?.member?.id == currentFront?.members?.values?.()?.next?.()?.value?.id});
+        if (!filtered) return defaultUser;
+        if (!Array.isArray(filtered)) return defaultUser;
+        if (!filtered[0]?.member) return defaultUser;
         defaultUser.globalName = filtered[0].member?.display_name;
         return defaultUser;
     },
@@ -376,13 +378,16 @@ export default definePlugin({
         if (!pkAuthor.switches)
             return nick;
 
+        if (!Array.isArray(pkAuthor.switches))
+            return nick;
+
         const messageSwitch = pkAuthor.switches?.[0]?.value;
-        const member = messageSwitch?.members ? messageSwitch.members.values().toArray()[0] ?? pkAuthor.member : undefined;
+        const member = messageSwitch?.members ? messageSwitch?.members?.values?.().toArray?.()[0] ?? pkAuthor?.member : undefined;
 
         if (!member)
             return nick;
 
-        nick = member.display_name ?? member.name;
+        nick = member.display_name ?? member.name ?? nick;
         return nick;
     },
 
@@ -421,9 +426,9 @@ export default definePlugin({
             let roleColor = guildMember?.colorString;
 
             if (pkAuthor.switches) {
-                const [messageSwitch] = pkAuthor.switches?.values()?.filter((switchObj) => {return message.timestamp >= switchObj.timestamp});
+                const [messageSwitch] = pkAuthor?.switches?.values?.()?.filter?.((switchObj) => {return message.timestamp >= switchObj?.timestamp});
 
-                pkAuthor.member = messageSwitch?.members ? messageSwitch.members.values().toArray()[0] ?? pkAuthor.member : undefined;
+                pkAuthor.member = messageSwitch?.members ? messageSwitch?.members?.values?.().toArray?.()?.[0] ?? pkAuthor?.member : undefined;
             }
 
             // A PK message that contains an author but no member, meaning the member was likely deleted

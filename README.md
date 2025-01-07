@@ -60,3 +60,6 @@
 2. Blocking pk users
 3. Option to use role colours rather than member colours
 
+
+> [!NOTE]
+> This repository was originally forked from ScyyeCord's PluralKitIntegration plugin, which can be found at https://github.com/ScyyeCord/PluralKitIntegration

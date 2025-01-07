@@ -67,8 +67,8 @@ function GetAuthorMenuItem(author: Author, message: Message) {
             action={() => {
                 const { guild_id } = ChannelStore.getChannel(message.channel_id);
                 MessageActions.sendMessage(message.channel_id, // Replace with pluralkit's channel ID once reproxying works in DMs: 1276796961227276338
-                                           {content: "pk;reproxy https://discord.com/channels/" + guild_id + "/" + message.channel_id + "/" + message.id + " " + author.member?.name},
-                                           false);
+                        {content: "pk;reproxy https://discord.com/channels/" + guild_id + "/" + message.channel_id + "/" + message.id + " " + author.member?.name},
+                    false);
                 }
             }
         />);
@@ -191,6 +191,9 @@ export default definePlugin({
     name: "Plural Kit",
     description: "Pluralkit integration for Vencord",
     authors: [{
+        name: "Adi",
+        id: 334742188841762819
+    },{
         name: "Scyye",
         id: 553652308295155723
     }],

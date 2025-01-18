@@ -267,6 +267,13 @@ export default definePlugin({
             }
         },
         {
+            find: "CUSTOM_GIFT?\"\"",
+            replacement: {
+                match: /childrenRepliedMessage:\i\|\|/,
+                replace: "$&$self.setRepliedMessage(arguments[0])||"
+            }
+        },
+        {
             find: '?"@":""',
             replacement: {
                 match: /(?<=onContextMenu:\i,children:).*?\)}/,
@@ -285,6 +292,38 @@ export default definePlugin({
             }
         },
     ],
+
+    setRepliedMessage: ({message}) => {
+        if (!message?.embeds?.[0])
+            return;
+
+        const author = message.embeds?.[0]?.author?.name;
+        console.log(author);
+
+        if (!author)
+            return;
+
+        if (!author?.endsWith?.("↩️"))
+            return;
+
+        const description = message.embeds[0].rawDescription;
+
+        if (!description)
+            return;
+
+        const match = /https:\/\/discord.com\/channels\/(\d*)\/(\d*)\/(\d*)/g.exec(description);
+
+        if (!match)
+            return;
+
+        const guild_id = match[1];
+        const channel_id = match[2];
+        const message_id = match[3];
+
+        message.messageReference = {channel_id: channel_id, guild_id: guild_id, message_id: message_id, type: 0}
+        message.embeds = [];
+        message.type = 19; // Mark the message as a reply
+    },
 
     saveTimestamp: ({message}) => {
         if(message?.timestamp)

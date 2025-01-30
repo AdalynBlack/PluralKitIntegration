@@ -17,9 +17,9 @@
 */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { addDecoration } from "@api/MessageDecorations";
-import { addPreEditListener } from "@api/MessageEvents";
-import { addButton, removeButton } from "@api/MessagePopover";
+import { addMessageDecoration } from "@api/MessageDecorations";
+import { addMessagePreEditListener } from "@api/MessageEvents";
+import { addMessagePopoverButton, removeMessagePopoverButton } from "@api/MessagePopover";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { DeleteIcon, PencilIcon } from "@components/Icons";
@@ -532,7 +532,7 @@ export default definePlugin({
             await loadAuthors();
         }
 
-        addDecoration("pk-proxied", props => {
+        addMessageDecoration("pk-proxied", props => {
             if (!settings.store.pkIcon)
                 return null;
             if (!isPk(props.message))
@@ -545,7 +545,7 @@ export default definePlugin({
             </ErrorBoundary>;
         });
 
-        addButton("pk-edit", msg => {
+        addMessagePopoverButton("pk-edit", msg => {
             if (!msg) return null;
             if (!isOwnPkMessage(msg, pluralKit.api)) return null;
 
@@ -561,7 +561,7 @@ export default definePlugin({
             };
         });
 
-        addButton("pk-delete", msg => {
+        addMessagePopoverButton("pk-delete", msg => {
             if (!msg) return null;
             if (!isOwnPkMessage(msg, pluralKit.api)) return null;
             if (!shiftKey) return null;
@@ -580,7 +580,7 @@ export default definePlugin({
         });
 
         // Stolen directly from https://github.com/lynxize/vencord-plugins/blob/plugins/src/userplugins/pk4vc/index.tsx
-        this.preEditListener = addPreEditListener((channelId, messageId, messageObj) => {
+        this.preEditListener = addMessagePreEditListener((channelId, messageId, messageObj) => {
             if (isPk(MessageStore.getMessage(channelId, messageId))) {
                 const { guild_id } = ChannelStore.getChannel(channelId);
                 MessageActions.sendMessage("1276796961227276338", {
@@ -594,8 +594,8 @@ export default definePlugin({
         document.addEventListener("keyup", onKey);
     },
     stop() {
-        removeButton("pk-edit");
-        removeButton("pk-delete");
+        removeMessagePopoverButton("pk-edit");
+        removeMessagePopoverButton("pk-delete");
         document.removeEventListener("keydown", onKey);
         document.removeEventListener("keyup", onKey);
     },

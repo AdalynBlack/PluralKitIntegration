@@ -298,7 +298,6 @@ export default definePlugin({
             return;
 
         const author = message.embeds?.[0]?.author?.name;
-        console.log(author);
 
         if (!author)
             return;

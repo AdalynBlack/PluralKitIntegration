@@ -48,6 +48,7 @@ import {
     loadAuthors, loadData,
     localSystem,
     replaceTags,
+    getUsernameStyle,
     getUserSystem,
 } from "./utils";
 
@@ -451,7 +452,7 @@ export default definePlugin({
             let username = isPk(message) ? message.author.username ?? author.nick ?? message.author.globalName : discordUsername;
 
             // U-FE0F is the Emoji variant selector. This converts pictographics to emoticons
-            username = username.replace(/\p{Emoji}/ug, "$&\uFE0F");
+            //username = username.replace(/\p{Emoji}/ug, "$&\uFE0F");
 
             if (!settings.store.colorNames)
                 return <>{prefix}{username}</>;
@@ -475,11 +476,8 @@ export default definePlugin({
             // A PK message that contains an author but no member, meaning the member was likely deleted
             if (!pkAuthor.member) {
                 // If this is a user system, don't apply the red coloration
-                let style = !userSystem ? {background: `linear-gradient(in oklab 60deg, ${roleColor ?? "var(--text-danger)"} 40%, var(--text-danger) 80%)`} : undefined;
-                if (style) {
-                    style.backgroundClip = "text";
-                    style.color = "transparent";
-                }
+                let style = userSystem ? undefined : getUsernameStyle(roleColor, "var(--text-danger)");
+
                 return <span style={style}>{prefix}{username}</span>;
             }
 
@@ -515,8 +513,8 @@ export default definePlugin({
             color = color ?? roleColor;
             roleColor = roleColor ?? color;
 
-            //return <span style={{color: color}}>{resultText}</span>;
-			return <span style={{background: `linear-gradient(in oklab 60deg, ${roleColor} 40%, ${color} 80%`, backgroundClip: "text", color: "transparent"}}>{prefix}{username}</span>;
+            let style = getUsernameStyle(roleColor, color);
+			return <span style={style}>{prefix}{resultText}</span>;
         } catch (e) {
             console.error(e);
             return <>{prefix}{author?.nick}</>;
@@ -607,4 +605,4 @@ function onKey(e: KeyboardEvent) {
 
 var userPopoutMessage: Message | null = null;
 var userPopoutMessageSender: any = null;
-var savedTimestamp: any = new Date();
+export var savedTimestamp: any = new Date();

@@ -11,7 +11,7 @@ import { ChannelStore, FluxDispatcher, UserStore } from "@webpack/common";
 import { Message } from "discord-types/general";
 
 import { Switch, Member, MemberGuildSettings, PKAPI, System, SystemGuildSettings } from "./api";
-import pluralKit, { settings } from "./index";
+import pluralKit, { savedTimestamp, settings } from "./index";
 
 
 // I dont fully understand how to use datastores, if I used anything incorrectly please let me know
@@ -51,6 +51,12 @@ export function replaceTags(content: string, message: Message, webhookName: stri
     if (!author?.member)
         throw new TypeError("The member who wrote this message cannot be found! Were they deleted?");
 
+    const switchIter = author?.switches?.values();
+    const messageSwitch = switchIter?.filter((switchObj) => {return savedTimestamp >= switchObj?.timestamp})?.next?.();
+    const member = messageSwitch?.value?.members?.values?.()?.next?.()?.value;
+
+    if (!member) return webhookName;
+
     const messageGuildID = ChannelStore.getChannel(message.channel_id).guild_id;
 
     var systemSettings = author.systemSettings?.[messageGuildID];
@@ -61,18 +67,18 @@ export function replaceTags(content: string, message: Message, webhookName: stri
 
     // prioritize guild settings, then system/member settings
     const { tag } = systemSettings ?? system;
-    const name = memberSettings?.display_name ?? author.member.display_name ?? author.member.name;
-    const avatar = memberSettings?.avatar_url ?? author.member.avatar;
+    const name = memberSettings?.display_name ?? member.display_name ?? member.name;
+    const avatar = memberSettings?.avatar_url ?? member.avatar;
 
     return content
         .replace(/{tag}/g, tag??"")
         .replace(/{webhookName}/g, webhookName??"")
         .replace(/{name}/g, name??"")
-        .replace(/{memberid}/g, author.member.id??"")
-        .replace(/{pronouns}/g, author.member.pronouns??"")
+        .replace(/{memberid}/g, member.id??"")
+        .replace(/{pronouns}/g, member.pronouns??"")
         .replace(/{systemid}/g, author.system.id??"")
         .replace(/{systemname}/g, author.system.name??"")
-        .replace(/{color}/g, author.member.color??"ffffff")
+        .replace(/{color}/g, member.color??"ffffff")
         .replace(/{avatar}/g, avatar??"");
 }
 
@@ -196,4 +202,15 @@ export function getUserSystem(discAuthor: string, pk: PKAPI) {
     authors["@"+discAuthor] = authors["@"+discAuthor] ?? null;
 
     return author;
+}
+
+export function getUsernameStyle(color1: string | undefined, color2: string | undefined) {
+    color2 ??= color1 ?? "var(--text-danger)";
+    color1 ??= color2;
+
+    // Gradient styling to be revisited later. Requires wrapping emojis in span tags so they aren't affected by the color gradient
+    //const style = {background: `linear-gradient(in oklab 60deg, ${color1} 40%, ${color2} 80%)`, backgroundClip: "text", color: "transparent"};
+
+    const style = {color: color1};
+    return style;
 }

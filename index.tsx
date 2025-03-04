@@ -277,7 +277,7 @@ export default definePlugin({
         {
             find: '?"@":""',
             replacement: {
-                match: /(?<=onContextMenu:\i,children:).*?\)}/,
+                match: /(?<=onContextMenu:\i,children:).*?}/,
                 replace: "$self.renderUsername(arguments[0])}"
             }
         },

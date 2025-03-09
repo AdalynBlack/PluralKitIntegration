@@ -215,7 +215,7 @@ export default definePlugin({
             find: ")?\"gif\":\"jpg\";",
             replacement: {
                 match: /(?<=\){)let \i,{endpoint:.*=.;/,
-                replace: "if($self.fronterPfp(arguments[0].id))return $self.fronterPfp(arguments[0].id);$&"
+                replace: "if($self.checkFronterPfp(arguments[0].id))return $self.fronterPfp(arguments[0].id);$&"
             }
         },
         {
@@ -326,17 +326,26 @@ export default definePlugin({
     },
 
     saveTimestamp: ({message}) => {
+        if(!getUserSystem(message.author.id, pluralKit.api))
+            return;
+
+        savedTimestamp = new Date();
         if(message?.timestamp)
             savedTimestamp = new Date(message.timestamp);
     },
 
-    fronterPfp: (userId) => {
+    checkFronterPfp: (userId) => {
         const pkAuthor = getUserSystem(userId, pluralKit.api);
         const messageIter = pkAuthor?.switches?.values();
         const messageSwitch = messageIter?.filter((switchObj) => {return savedTimestamp >= switchObj?.timestamp})?.next?.();
         const member = messageSwitch?.value?.members?.values?.()?.next?.();
         const url = member?.value?.avatar_url;
         return url;
+    },
+
+    fronterPfp: (userId) => {
+        const pfp = pluralKit.checkFronterPfp(userId);
+        return pfp;
     },
 
     getCurrentUser: (defaultUser) => {

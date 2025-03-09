@@ -277,8 +277,8 @@ export default definePlugin({
         {
             find: '?"@":""',
             replacement: {
-                match: /(?<=onContextMenu:\i,children:).*?}/,
-                replace: "$self.renderUsername(arguments[0])}"
+                match: /(?<=children:)\(\i\?"@":""\)\+\i(?=,|\})/,
+                replace: "$self.renderUsername(arguments[0])"
             }
         },
         // make up arrow to edit most recent message work

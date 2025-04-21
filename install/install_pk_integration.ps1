@@ -44,8 +44,7 @@ function Main {
 		})
 	)
 
-	$PathSeparator = [IO.Path]::DirectorySeparatorChar
-	$SrcDirectory = "$([Environment]::GetFolderPath("MyDocuments"))$($PathSeperator)src"
+	$SrcDirectory = Join-Path -Path "$([Environment]::GetFolderPath("MyDocuments"))" -ChildPath "src"
 	Mkdir-CD $SrcDirectory
 	Write-Host "Installation located at $SrcDirectory" -ForegroundColor "Gray"
 
@@ -72,7 +71,7 @@ function Main {
 	$VencordType = $Host.UI.PromptForChoice("Vencord Version Query", "What version of Vencord do you use?", $VencordTypes, 0)
 
 	Write-Host "Building $($VencordTypes[$VencordType])" -ForegroundColor "Gray"
-	$DistDirectory = "$SrcDirectory$($PathSeparator)dist"
+	$DistDirectory = Join-Path -Path "$SrcDirectory" -ChildPath "dist"
 	switch ($VencordType) {
 		# Vencord
 		0 {
@@ -240,7 +239,7 @@ function Mkdir-CD {
 	param ( [string] $directory )
 
 	if(-Not (Test-Path -Path "$directory")){
-		New-Item -Name "$directory" -ItemType Directory
+		New-Item -Path "$directory" -ItemType Directory
 	}
 
 	cd $directory

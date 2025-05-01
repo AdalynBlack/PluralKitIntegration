@@ -254,7 +254,7 @@ export default definePlugin({
             }
         },
         {
-            find: "PENDING_INCOMING&&(0,",
+            find: ".hasAvatarForGuild(null==",
             replacement: {
                 match: /let{user:\i/,
                 replace: "arguments[0].user=$self.getUserPopoutMessageSender(arguments[0]) ?? arguments[0].user;$&"
@@ -275,7 +275,7 @@ export default definePlugin({
             }
         },
         {
-            find: '?"@":""',
+            find: '?"@":"",',
             replacement: {
                 match: /(?<=children:)\(\i\?"@":""\)\+\i(?=,|\})/,
                 replace: "$self.renderUsername(arguments[0])"
@@ -286,7 +286,7 @@ export default definePlugin({
         // using that plugin, you'll have enough problems with pk already
         // Stolen directly from https://github.com/lynxize/vencord-plugins/blob/plugins/src/userplugins/pk4vc/index.tsx
         {
-            find: "getLastEditableMessage",
+            find: "}getLastEditableMessage",
             replacement: {
                 match: /return (.)\(\)\(this.getMessages\((.)\).{10,100}:.\.id\)/,
                 replace: "return $1()(this.getMessages($2).toArray()).reverse().find(msg => $self.isOwnMessage(msg)"

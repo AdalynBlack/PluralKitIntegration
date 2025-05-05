@@ -82,10 +82,10 @@ AxiosRateLimit.prototype.handleResponse = function (response) {
         if (rateLimitReset > this.rateLimitReset) {
             this.rateLimitReset = rateLimitReset;
 
-            this.rateLimitLimit = +response.headers['x-ratelimit-limit'] ?? this.rateLimitLimit;
+            this.rateLimitLimit = +response.headers['x-ratelimit-limit'];
 
             // PluralKit does some weird math with the rate limit, so we have to undo it
-            this.rateLimitRemaining = +response.headers['x-ratelimit-remaining'] ?? 0;
+            this.rateLimitRemaining = +response.headers['x-ratelimit-remaining'];
             this.rateLimitRemaining += (this.rateLimitBurst - this.rateLimitLimit);
         }
     } catch (e) {

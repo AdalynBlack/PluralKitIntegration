@@ -170,34 +170,39 @@ export function getUserSystem(discAuthor: string, pk: PKAPI) {
     if (author)
         author.lastUpdated = Date.now();
 
-    pk.getSystem({system: discAuthor}).then(system => {
-        if (!system?.id) return;
+    try {
+        pk.getSystem({system: discAuthor}).then(system => {
+            if (!system?.id) return;
 
-        if (!author)
-            author = {system: system, lastUpdated: Date.now()};
-        else {
-            author.system = system;
-        }
-        author.discordID = discAuthor;
-
-        authors["@"+discAuthor] = author;
-
-        pluralKit.api.getSwitches({system: system.id}).then((switchObj) => {
-            if (!switchObj) return;
-            if (!author) return;
-
-            author.switches = switchObj;
-
-            const [latestSwitch] = switchObj.values();
-
-            if (latestSwitch?.members) {
-                const [primaryFronter] = latestSwitch.members.values();
-                author.member = primaryFronter;
+            if (!author)
+                author = {system: system, lastUpdated: Date.now()};
+            else {
+                author.system = system;
             }
+            author.discordID = discAuthor;
 
             authors["@"+discAuthor] = author;
+
+            pluralKit.api.getSwitches({system: system.id}).then((switchObj) => {
+                if (!switchObj) return;
+                if (!author) return;
+
+                author.switches = switchObj;
+
+                const [latestSwitch] = switchObj.values();
+
+                if (latestSwitch?.members) {
+                    const [primaryFronter] = latestSwitch.members.values();
+                    author.member = primaryFronter;
+                }
+
+                authors["@"+discAuthor] = author;
+            });
         });
-    });
+    } catch(e) {
+        console.error(e)
+        return author;
+    }
 
     authors["@"+discAuthor] = authors["@"+discAuthor] ?? null;
 

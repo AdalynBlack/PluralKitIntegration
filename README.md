@@ -60,6 +60,9 @@
 2. Blocking pk users
 3. Option to use role colours rather than member colours
 
+## Known issues
+- Profile pictures and banners hosted on untrusted domains do not appear
+  - This is a result of Vencord's CspPolicies. Eventually, an image proxy may be used to anonymize users when accessing untrusted domains, though this is currently a low priority
 
 > [!NOTE]
 > This repository was originally forked from ScyyeCord's PluralKitIntegration plugin, which can be found at https://github.com/ScyyeCord/PluralKitIntegration

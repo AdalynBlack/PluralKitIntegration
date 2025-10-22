@@ -1,4 +1,5 @@
 import { CspPolicies, ConnectSrc, ImageSrc } from "@main/csp"
 
-CspPolicies["api.pluralkit.me"] = ConnectSrc;
-CspPolicies["cdn.pluralkit.me"] = ImageSrc;
+CspPolicies["https://api.pluralkit.me"] = ConnectSrc;
+CspPolicies["https://*.pluralkit.me"] = ImageSrc;
+CspPolicies["https://pluralkit.me"] = ImageSrc;

@@ -212,9 +212,9 @@ export default definePlugin({
             }
         },
         {
-            find: ")?\"gif\":\"jpg\";",
+            find: "path:\"avatars\"",
             replacement: {
-                match: /(?<=\){)let \i,{endpoint:.*=.;/,
+                match: /return A\({.*endpoint:\i\.ANM\.AVATAR,*path:"avatars",.*}\)/,
                 replace: "if($self.checkFronterPfp(arguments[0].id))return $self.fronterPfp(arguments[0].id);$&"
             }
         },
@@ -277,8 +277,8 @@ export default definePlugin({
         {
             find: '?"@":"",',
             replacement: {
-                match: /(?<=onContextMenu:\i,children:).*?}/,
-                replace: "$self.renderUsername(arguments[0])}"
+                match: /(?<=onContextMenu:\i,children:\i\?.*}\):)\i/,
+                replace: "$self.renderUsername(arguments[0])"
             }
         },
         // make up arrow to edit most recent message work
